@@ -1,0 +1,52 @@
+setwd(choose.dir())
+data= read.csv('passenger.csv')
+rownames(data) <- data$MONTH
+data
+data = subset(data, select = -c(MONTH) )
+
+data = ts(data[,1],frequency=12,start = c(2016,4))
+plot(data)
+abline(reg = lm(data~time(data)))
+
+f <- decompose(data)
+plot(f)
+
+boxplot(data~cycle(data))
+plot(log(data))
+plot(diff(log(data)))
+#prediction for 2019 
+library(tseries)
+#adf.test(diff(log(data)),alternative = c('stationary'),k=0)
+adf.test(diff(log(data)),alternative = "stationary",k=0)
+acf(diff(log(data)))
+
+pacf(diff(log(data)))
+
+fit = arima(log(data),c(0,1,2),seasonal = list(order=c(0,1,2),period =12))
+
+pred = predict(fit, n.ahead = 2*12)
+
+pred1= 2.718^pred$pred
+ts.plot(data, 2.718^pred$pred, log ="y",col = c(1,2,4))
+
+pred1 = round(pred1,digits = 0)
+
+
+#prediction for 2018 to check whether prediction is right or wrong
+data1 = ts(data,frequency=12,start = c(2016,4),end = c(2017, 12))
+library(tseries)
+adf.test(diff(log(data)),alternative = c('stationary','explosive'),k=0)
+
+acf(diff(log(data)))
+
+pacf(diff(log(data)))
+
+fit = arima(log(data),c(0,1,2),seasonal = list(order=c(0,1,2),period =12))
+
+pred = predict(fit, n.ahead = 1*12)
+
+pred1= 2.718^pred$pred
+U <- 2.718^pred$pred+4*2.718^pred$se
+ts.plot(data, 2.718^pred$pred,U, log ="y",col = c(1,2,4))
+
+pred1 = round(pred1,digits = 0)
